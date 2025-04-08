@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { access_token, Album } from "../types/types";
+import { Album } from "../types/types";
 import { Avatar, Box } from "@mui/material";
 import YearFilter from "../components/Table_Components/YearFilter";
 import AlbumTable from "../components/Table_Components/AlbumTable";
 import AlertSnackbar from "../components/AlertSnackbar";
 import { Link } from "react-router-dom";
+import { getValidSpotifyToken } from "../utils/TokenManager";
 
 const HomePage = () => {
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -27,7 +28,8 @@ const HomePage = () => {
       setError(null);
 
       try {
-        const token = access_token;
+        const token = await getValidSpotifyToken();
+
         const url = `https://api.spotify.com/v1/artists/6vWDO969PvNqNYHIOW5v0m/albums?offset=${
           page * pageSize
         }&limit=${pageSize}&locale=en-US,en;q%3D0.9,ar;q%3D0.8&include_groups=album,single,compilation,appears_on`;

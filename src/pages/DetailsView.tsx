@@ -9,11 +9,12 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
-import { access_token, Album, Tracks } from "../types/types";
+import { Album, Tracks } from "../types/types";
 import LoadingSpinner from "../components/LoadingSpinner";
 import EmbeddedSpotifyPlayer from "../components/Details_View_Components/EmbeddedSpotifyPlayer";
 import AlbumCard from "../components/Details_View_Components/AlbumCard";
 import BackButton from "../components/Details_View_Components/BackButton";
+import { getValidSpotifyToken } from "../utils/TokenManager";
 
 const DetailsView = () => {
   const { id } = useParams();
@@ -23,11 +24,11 @@ const DetailsView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const token = access_token;
-
   useEffect(() => {
     const fetchAlbum = async () => {
       try {
+        const token = await getValidSpotifyToken();
+
         const response = await axios.get<Album>(
           `https://api.spotify.com/v1/albums/${id}`,
           {
@@ -48,6 +49,8 @@ const DetailsView = () => {
   useEffect(() => {
     const fetchTracks = async () => {
       try {
+        const token = await getValidSpotifyToken();
+
         const response = await axios.get<{ items: Tracks[] }>(
           `https://api.spotify.com/v1/albums/${id}/tracks`,
           {
@@ -69,10 +72,15 @@ const DetailsView = () => {
     return `${minutes}:${seconds.padStart(2, "0")}`;
   };
 
-  const handleTrackClick = (trackUri: string, trackName: string) => {
-    navigate("/player", {
-      state: { token, trackUri, trackName },
-    });
+  const handleTrackClick = async (trackUri: string, trackName: string) => {
+    try {
+      const token = await getValidSpotifyToken();
+      navigate("/player", {
+        state: { token, trackUri, trackName },
+      });
+    } catch (err) {
+      console.error("Error getting token for player:", err);
+    }
   };
 
   if (loading) return <LoadingSpinner />;
